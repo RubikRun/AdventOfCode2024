@@ -155,7 +155,10 @@ bool doesLoop(Guard guard, ListOfString map)
 	return false;
 }
 
-void solve01(ListOfString map)
+// NOTE: Given map is a non-const reference and IT IS changed inside the function.
+//       You need to keep copy of the original map.
+//       This is done for optimization because we need this modified map in solve02()
+void solve01(ListOfString& map)
 {
 	Guard guard = findGuard(map);
 	map[guard.row][guard.col] = '.';
@@ -168,7 +171,7 @@ void solve01(ListOfString map)
 	std::cout << countXs(map) << std::endl;
 }
 
-void solve02(ListOfString map)
+void solve02(ListOfString map, const ListOfString& solved01map)
 {
 	const Guard guard = findGuard(map);
 	map[guard.row][guard.col] = '.';
@@ -178,7 +181,9 @@ void solve02(ListOfString map)
 	{
 		for (int col = 0; col < map[row].length(); col++)
 		{
-			if (map[row][col] == '.')
+			// Use a little optimization here:
+			// We don't need to put an obstacle and test for a loop on cells that were not touched by the original route.
+			if (map[row][col] == '.' && solved01map[row][col] == 'X')
 			{
 				map[row][col] = '#';
 				if (doesLoop(guard, map))
@@ -198,6 +203,7 @@ int main()
 	ListOfString map;
 	readInput(map);
 	
-	solve01(map);
-	solve02(map);
+	ListOfString solved01map = map;
+	solve01(solved01map);
+	solve02(map, solved01map);
 }
